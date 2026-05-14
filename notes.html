@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Notes & Revision - StudySphere{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-sticky-note me-2" style="color: var(--neon-blue);"></i>
+            Notes & Revision
+        </h2>
+    </div>
+</div>
+
+<!-- Add New Note Form -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="glass-card">
+            <h4 class="mb-3">
+                <i class="fas fa-plus-circle me-2" style="color: var(--neon-green);"></i>
+                Create New Note
+            </h4>
+            <form method="POST" action="{{ url_for('notes') }}">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Title</label>
+                        <input type="text" class="form-control" name="title" placeholder="Note title" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Subject</label>
+                        <select class="form-control" name="subject">
+                            <option value="">Select Subject (Optional)</option>
+                            {% for subject in subjects %}
+                            <option value="{{ subject }}">{{ subject }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Options</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="important" id="important">
+                            <label class="form-check-label" for="important">
+                                <i class="fas fa-star me-1" style="color: var(--neon-pink);"></i>Mark as Important
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <label class="form-label">Content</label>
+                        <textarea class="form-control" name="content" rows="4" placeholder="Write your note here..." required></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-neon">
+                    <i class="fas fa-save me-2"></i>Save Note
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Options -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ url_for('notes') }}" class="btn btn-outline btn-sm">
+                <i class="fas fa-list me-1"></i> All Notes
+            </a>
+            <a href="{{ url_for('notes') }}?filter=important" class="btn btn-outline btn-sm">
+                <i class="fas fa-star me-1" style="color: var(--neon-pink);"></i> Important
+            </a>
+            <a href="{{ url_for('notes') }}?filter=pending" class="btn btn-outline btn-sm">
+                <i class="fas fa-clock me-1"></i> Pending Revision
+            </a>
+            <a href="{{ url_for('notes') }}?filter=completed" class="btn btn-outline btn-sm">
+                <i class="fas fa-check me-1"></i> Completed
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Notes List -->
+<div class="row">
+    <div class="col-12">
+        <div class="glass-card">
+            <h4 class="mb-3">
+                <i class="fas fa-bookmark me-2" style="color: var(--neon-purple);"></i>
+                Your Notes
+            </h4>
+            {% if notes %}
+                {% for note in notes %}
+                <div class="note-card {% if note.important %}important{% endif %} {% if note.revision_completed %}completed{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center mb-2">
+                                {% if note.important %}
+                                    <i class="fas fa-star me-2" style="color: var(--neon-pink);"></i>
+                                {% endif %}
+                                {% if note.revision_completed %}
+                                    <i class="fas fa-check-circle me-2" style="color: var(--neon-green);"></i>
+                                {% else %}
+                                    <i class="fas fa-circle me-2" style="color: rgba(255,255,255,0.3); font-size: 0.5rem;"></i>
+                                {% endif %}
+                                <h5 class="mb-0 note-title">{{ note.title }}</h5>
+                            </div>
+                            {% if note.subject %}
+                                <span class="badge mb-2" style="background: var(--primary-gradient);">{{ note.subject }}</span>
+                            {% endif %}
+                            <p class="mb-2">{{ note.content[:150] }}{% if note.content|length > 150 %}...{% endif %}</p>
+                            <p class="mb-0 text-muted small">
+                                <i class="fas fa-calendar me-1"></i>Created: {{ note.created_at.strftime('%B %d, %Y') }}
+                                {% if note.updated_at != note.created_at %}
+                                    | Updated: {{ note.updated_at.strftime('%B %d, %Y') }}
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="ms-3">
+                            <form method="POST" action="{{ url_for('toggle_important', note_id=note.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline" 
+                                        style="color: var(--neon-pink) if note.important else rgba(255,255,255,0.6); border-color: var(--neon-pink) if note.important else rgba(255,255,255,0.3);" 
+                                        title="Mark as Important">
+                                    <i class="fas fa-star"></i>
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ url_for('toggle_revision', note_id=note.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline" 
+                                        style="color: var(--neon-green) if note.revision_completed else rgba(255,255,255,0.6); border-color: var(--neon-green) if note.revision_completed else rgba(255,255,255,0.3);" 
+                                        title="Mark Revision Complete">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ url_for('delete_note', note_id=note.id) }}" 
+                                  onsubmit="return confirmDelete('Are you sure you want to delete this note?');"
+                                  class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline" style="color: #f5576c; border-color: #f5576c;" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-sticky-note fa-4x mb-3" style="color: rgba(255,255,255,0.3);"></i>
+                    <p class="text-muted">No notes yet. Create your first note above!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Notes Statistics -->
+<div class="row mt-4">
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ notes|length }}</div>
+            <div class="stat-label">Total Notes</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ notes|selectattr('important')|list|length }}</div>
+            <div class="stat-label">Important Notes</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ notes|selectattr('revision_completed')|list|length }}</div>
+            <div class="stat-label">Revised Notes</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ notes|rejectattr('revision_completed')|list|length }}</div>
+            <div class="stat-label">Pending Revision</div>
+        </div>
+    </div>
+</div>
+
+<!-- Study Tips -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="glass-card">
+            <h4 class="mb-3">
+                <i class="fas fa-lightbulb me-2" style="color: var(--neon-purple);"></i>
+                Effective Note-Taking Tips
+            </h4>
+            <ul class="mb-0">
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Use the Cornell Method: Divide notes into cues, notes, and summary sections</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Review your notes within 24 hours of taking them</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Use colors and highlights to emphasize key points</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Summarize complex topics in your own words</li>
+                <li class="mb-0"><i class="fas fa-check text-success me-2"></i>Regular revision improves long-term retention significantly</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
