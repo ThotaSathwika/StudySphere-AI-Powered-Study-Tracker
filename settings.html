@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - StudySphere{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-cog me-2" style="color: var(--neon-blue);"></i>
+            Settings
+        </h2>
+    </div>
+</div>
+
+<!-- Profile Settings -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="glass-card">
+            <h4 class="mb-3">
+                <i class="fas fa-user me-2" style="color: var(--neon-purple);"></i>
+                Profile Settings
+            </h4>
+            <form method="POST" action="{{ url_for('settings') }}">
+                <input type="hidden" name="action" value="update_profile">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" class="form-control" value="{{ current_user.username }}" disabled>
+                        <small class="text-muted">Username cannot be changed</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" name="email" value="{{ current_user.email }}" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-neon">
+                    <i class="fas fa-save me-2"></i>Update Profile
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="glass-card">
+            <h4 class="mb-3">
+                <i class="fas fa-lock me-2" style="color: var(--neon-green);"></i>
+                Change Password
+            </h4>
+            <form method="POST" action="{{ url_for('settings') }}">
+                <input type="hidden" name="action" value="change_password">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Current Password</label>
+                        <input type="password" class="form-control" name="current_password" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">New Password</label>
+                        <input type="password" class="form-control" name="new_password" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Confirm New Password</label>
+                        <input type="password" class="form-control" name="confirm_password" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-secondary">
+                    <i class="fas fa-key me-2"></i>Change Password
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Data Management -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="glass-card">
+            <h4 class="mb-3">
+                <i class="fas fa-database me-2" style="color: var(--neon-pink);"></i>
+                Data Management
+            </h4>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <h5>Export Data</h5>
+                    <p class="text-muted mb-3">Download all your study data as a CSV file.</p>
+                    <a href="{{ url_for('export_csv') }}" class="btn btn-outline" onclick="return confirmExport();">
+                        <i class="fas fa-download me-2"></i>Export CSV
+                    </a>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h5>Reset All Data</h5>
+                    <p class="text-danger mb-3">⚠️ This will permanently delete all your study sessions, goals, and notes. This action cannot be undone.</p>
+                    <form method="POST" action="{{ url_for('settings') }}" onsubmit="return confirm('Are you sure you want to delete ALL data? This cannot be undone!');">
+                        <input type="hidden" name="action" value="reset_data">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="confirm" placeholder="Type DELETE to confirm" required>
+                            <button type="submit" class="btn btn-danger" style="background: #f5576c; border: none;">
+                                <i class="fas fa-trash me-2"></i>Reset Data
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reminder Preferences -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="glass-card">
+            <h4 class="mb-3">
+                <i class="fas fa-bell me-2" style="color: var(--neon-blue);"></i>
+                Reminder Preferences
+            </h4>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="dailyReminder" checked>
+                        <label class="form-check-label" for="dailyReminder">
+                            Daily Study Reminder
+                        </label>
+                    </div>
+                    <p class="text-muted small">Receive daily reminders to log your study sessions</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="goalReminder" checked>
+                        <label class="form-check-label" for="goalReminder">
+                            Goal Progress Alerts
+                        </label>
+                    </div>
+                    <p class="text-muted small">Get notified when you're close to completing goals</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="streakAlert" checked>
+                        <label class="form-check-label" for="streakAlert">
+                            Streak Alerts
+                        </label>
+                    </div>
+                    <p class="text-muted small">Alert when your study streak is at risk</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="weeklyReport" checked>
+                        <label class="form-check-label" for="weeklyReport">
+                            Weekly Reports
+                        </label>
+                    </div>
+                    <p class="text-muted small">Receive weekly summary of your study progress</p>
+                </div>
+            </div>
+            <button class="btn btn-neon">
+                <i class="fas fa-save me-2"></i>Save Preferences
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Account Information -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="glass-card">
+            <h4 class="mb-3">
+                <i class="fas fa-info-circle me-2" style="color: var(--neon-purple);"></i>
+                Account Information
+            </h4>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label text-muted">Username</label>
+                    <p class="h5">{{ current_user.username }}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label text-muted">Email</label>
+                    <p class="h5">{{ current_user.email }}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label text-muted">Member Since</label>
+                    <p class="h5">{{ current_user.created_at.strftime('%B %d, %Y') }}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label text-muted">Total Study Sessions</label>
+                    <p class="h5">{{ current_user.study_sessions|length }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account -->
+<div class="row">
+    <div class="col-12">
+        <div class="glass-card" style="border-color: #f5576c;">
+            <h4 class="mb-3 text-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Danger Zone
+            </h4>
+            <p class="mb-3">Permanently delete your account and all associated data. This action cannot be undone.</p>
+            <button class="btn btn-danger" style="background: #f5576c; border: none;" onclick="alert('Account deletion not yet implemented in this demo.');">
+                <i class="fas fa-user-times me-2"></i>Delete Account
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
