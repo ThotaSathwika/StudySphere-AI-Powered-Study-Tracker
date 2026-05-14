@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - StudySphere{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-chart-bar me-2" style="color: var(--neon-blue);"></i>
+            Analytics Dashboard
+        </h2>
+    </div>
+</div>
+
+<!-- Weekly Study Chart -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="chart-container">
+            <h4 class="mb-3">
+                <i class="fas fa-chart-line me-2" style="color: var(--neon-purple);"></i>
+                Weekly Study Hours
+            </h4>
+            <canvas id="weeklyChart" data-chart='{{ weekly_data | tojson }}'></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Subject Distribution Chart -->
+<div class="row mb-4">
+    <div class="col-lg-6 mb-4">
+        <div class="chart-container">
+            <h4 class="mb-3">
+                <i class="fas fa-chart-pie me-2" style="color: var(--neon-green);"></i>
+                Subject Distribution
+            </h4>
+            <canvas id="subjectChart" data-chart='{{ subject_data | tojson }}'></canvas>
+        </div>
+    </div>
+    <div class="col-lg-6 mb-4">
+        <div class="chart-container">
+            <h4 class="mb-3">
+                <i class="fas fa-chart-area me-2" style="color: var(--neon-pink);"></i>
+                Monthly Productivity
+            </h4>
+            <canvas id="monthlyChart" data-chart='{{ monthly_data | tojson }}'></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Daily Productivity Chart -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="chart-container">
+            <h4 class="mb-3">
+                <i class="fas fa-calendar-alt me-2" style="color: var(--neon-blue);"></i>
+                Daily Productivity (Last 30 Days)
+            </h4>
+            <canvas id="dailyChart" data-chart='{{ daily_data | tojson }}'></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Statistics -->
+<div class="row">
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ weekly_data | length }}</div>
+            <div class="stat-label">Weeks Tracked</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ subject_data | length }}</div>
+            <div class="stat-label">Subjects Studied</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ monthly_data | length }}</div>
+            <div class="stat-label">Months Active</div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ "%.1f"|format(weekly_data.values() | sum / weekly_data | length if weekly_data else 0) }}h</div>
+            <div class="stat-label">Avg Weekly Hours</div>
+        </div>
+    </div>
+</div>
+
+<!-- Insights Section -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="glass-card">
+            <h4 class="mb-3">
+                <i class="fas fa-lightbulb me-2" style="color: var(--neon-purple);"></i>
+                Study Insights
+            </h4>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <h6>Most Studied Subject</h6>
+                    {% if subject_data %}
+                        {% set max_subject = subject_data.items() | sort(attribute='1', reverse=true) | first %}
+                        <p class="h5" style="color: var(--neon-blue);">{{ max_subject[0] }} ({{ "%.1f"|format(max_subject[1]) }}h)</p>
+                    {% else %}
+                        <p class="text-muted">No data yet</p>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6>Most Productive Month</h6>
+                    {% if monthly_data %}
+                        {% set max_month = monthly_data.items() | sort(attribute='1', reverse=true) | first %}
+                        <p class="h5" style="color: var(--neon-green);">{{ max_month[0] }} ({{ "%.1f"|format(max_month[1]) }}h)</p>
+                    {% else %}
+                        <p class="text-muted">No data yet</p>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6>Total Study Time</h6>
+                    <p class="h5" style="color: var(--neon-pink);">{{ "%.1f"|format(subject_data.values() | sum) }} hours</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6>Avg Daily Study</h6>
+                    <p class="h5" style="color: var(--neon-purple);">{{ "%.2f"|format((subject_data.values() | sum) / 30 if daily_data else 0) }} hours</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
