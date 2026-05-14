@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - StudySphere{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-chart-line me-2" style="color: var(--neon-blue);"></i>
+            Welcome back, {{ current_user.username }}!
+        </h2>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ total_sessions }}</div>
+            <div class="stat-label">Total Sessions</div>
+            <i class="fas fa-book-open position-absolute top-0 end-0 m-3" style="color: var(--neon-blue); opacity: 0.3;"></i>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ total_hours }}h</div>
+            <div class="stat-label">Total Study Hours</div>
+            <i class="fas fa-clock position-absolute top-0 end-0 m-3" style="color: var(--neon-purple); opacity: 0.3;"></i>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ weekly_hours }}h</div>
+            <div class="stat-label">This Week</div>
+            <i class="fas fa-calendar-week position-absolute top-0 end-0 m-3" style="color: var(--neon-green); opacity: 0.3;"></i>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6 mb-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ streak }}</div>
+            <div class="stat-label">Day Streak 🔥</div>
+            <i class="fas fa-fire position-absolute top-0 end-0 m-3" style="color: var(--neon-pink); opacity: 0.3;"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Main Dashboard Content -->
+<div class="row">
+    <!-- Left Column - Pomodoro Timer & Quick Actions -->
+    <div class="col-lg-4 mb-4">
+        <!-- Pomodoro Timer -->
+        <div class="glass-card mb-4">
+            <h4 class="mb-3">
+                <i class="fas fa-stopwatch me-2" style="color: var(--neon-blue);"></i>
+                Pomodoro Timer
+            </h4>
+            <div class="text-center mb-4">
+                <div id="pomodoro-circle" class="pomodoro-circle mx-auto">
+                    <span id="pomodoro-display">25:00</span>
+                </div>
+            </div>
+            <div class="text-center">
+                <button id="start-timer" class="btn btn-neon me-2">
+                    <i class="fas fa-play me-1"></i> Start
+                </button>
+                <button id="pause-timer" class="btn btn-outline me-2">
+                    <i class="fas fa-pause me-1"></i> Pause
+                </button>
+                <button id="reset-timer" class="btn btn-outline">
+                    <i class="fas fa-redo me-1"></i> Reset
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="glass-card">
+            <h4 class="mb-3">
+                <i class="fas fa-bolt me-2" style="color: var(--neon-purple);"></i>
+                Quick Actions
+            </h4>
+            <div class="d-grid gap-2">
+                <a href="{{ url_for('sessions') }}" class="btn btn-neon">
+                    <i class="fas fa-plus me-2"></i>Add Study Session
+                </a>
+                <a href="{{ url_for('goals') }}" class="btn btn-secondary">
+                    <i class="fas fa-bullseye me-2"></i>Set New Goal
+                </a>
+                <a href="{{ url_for('notes') }}" class="btn btn-outline">
+                    <i class="fas fa-sticky-note me-2"></i>Create Note
+                </a>
+                <a href="{{ url_for('export_csv') }}" class="btn btn-outline" onclick="return confirmExport();">
+                    <i class="fas fa-download me-2"></i>Export Data
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Middle Column - Goals Progress -->
+    <div class="col-lg-4 mb-4">
+        <div class="glass-card h-100">
+            <h4 class="mb-3">
+                <i class="fas fa-tasks me-2" style="color: var(--neon-green);"></i>
+                Goals Progress
+            </h4>
+            {% if goals_progress %}
+                {% for goal in goals_progress %}
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>{{ goal.title }}</span>
+                        <span>{{ goal.current }}h / {{ goal.target }}h</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: {{ goal.progress }}%"></div>
+                    </div>
+                    <small class="text-muted">{{ "%.1f"|format(goal.progress) }}% Complete</small>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">No active goals. <a href="{{ url_for('goals') }}">Create one now!</a></p>
+            {% endif %}
+            
+            <hr class="my-4" style="border-color: var(--glass-border);">
+            
+            <h5 class="mb-3">Subject Breakdown</h5>
+            {% if subject_stats %}
+                {% for subject, hours in subject_stats.items() %}
+                <div class="d-flex justify-content-between mb-2">
+                    <span><i class="fas fa-circle me-2" style="color: {{ ['667eea', '00f5ff', '00ff87', 'bf00ff', 'ff00ff', 'f093fb', 'ffd93d', 'f5576c'][loop.index0 % 8] }}; font-size: 8px;"></i>{{ subject }}</span>
+                    <span>{{ "%.1f"|format(hours) }}h</span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">No study sessions yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Column - Recent Sessions -->
+    <div class="col-lg-4 mb-4">
+        <div class="glass-card h-100">
+            <h4 class="mb-3">
+                <i class="fas fa-history me-2" style="color: var(--neon-pink);"></i>
+                Recent Sessions
+            </h4>
+            {% if recent_sessions %}
+                <div class="list-group list-group-flush">
+                    {% for session in recent_sessions %}
+                    <div class="list-group-item" style="background: transparent; border-color: var(--glass-border);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ session.subject }}</h6>
+                                <small class="text-muted">{{ session.date.strftime('%B %d, %Y') }}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge" style="background: var(--primary-gradient);">
+                                    {{ session.duration_hours }}h {{ session.duration_minutes }}m
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="mt-3 text-center">
+                    <a href="{{ url_for('sessions') }}" class="btn btn-outline btn-sm">View All Sessions</a>
+                </div>
+            {% else %}
+                <p class="text-muted">No study sessions yet. Start tracking!</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Productivity Tip -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="glass-card">
+            <h4 class="mb-3">
+                <i class="fas fa-lightbulb me-2" style="color: var(--neon-blue);"></i>
+                Productivity Tip
+            </h4>
+            <p class="mb-0">
+                <i class="fas fa-quote-left me-2" style="color: var(--neon-purple);"></i>
+                Use the Pomodoro Technique: Study for 25 minutes, then take a 5-minute break. After four sessions, take a longer 15-30 minute break. This helps maintain focus and prevents burnout.
+                <i class="fas fa-quote-right ms-2" style="color: var(--neon-purple);"></i>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
