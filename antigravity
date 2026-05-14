@@ -1,0 +1,119 @@
+# Prompt.md — StudySphere | AI-Powered Study Tracker
+
+Build a futuristic and responsive full-stack Study Tracker web application called “StudySphere” using Flask, SQLite, HTML, CSS, Bootstrap, and Chart.js.
+
+The UI should have:
+- Dark futuristic glassmorphism design
+- Neon gradients
+- Smooth hover animations
+- Interactive dashboard cards
+- Responsive mobile-first layout
+
+Core Features:
+1. User Authentication
+- Register/Login/Logout
+- Secure password hashing
+- Session management
+
+2. Study Session Tracking
+- Add study sessions
+- Subject name
+- Duration in hours/minutes
+- Notes
+- Date selection
+
+3. Subject Categories
+Include:
+- Mathematics
+- Programming
+- Science
+- AI & Machine Learning
+- Data Structures
+- Web Development
+- Aptitude
+- Other
+
+4. Analytics Dashboard
+Display:
+- Total study hours
+- Weekly study analytics
+- Subject-wise breakdown
+- Productivity trends
+- Daily streak tracker
+- Completion percentage
+
+5. Pomodoro Timer
+- 25/5 study timer
+- Start/Pause/Reset buttons
+- Animated circular progress
+
+6. Goal Management
+- Daily goals
+- Weekly targets
+- Completion tracker
+- Progress bars
+
+7. Charts
+Use Chart.js for:
+- Weekly study chart
+- Subject distribution chart
+- Monthly productivity graph
+
+8. Notes & Revision
+- Save quick notes
+- Mark revision completed
+- Highlight important topics
+
+9. Export Features
+- Export study data as CSV
+- Download study reports
+
+10. Settings Page
+- Theme settings
+- User profile
+- Reset data
+- Reminder preferences
+
+Tech Stack:
+Backend:
+- Flask
+- Flask-SQLAlchemy
+- Flask-Login
+- Flask-Bcrypt
+
+Frontend:
+- Bootstrap 5
+- HTML5
+- CSS3
+- JavaScript
+- Chart.js
+
+Database:
+- SQLite
+
+Pages Required:
+- Login
+- Register
+- Dashboard
+- Study Sessions
+- Goals
+- Analytics
+- Notes
+- Settings
+
+Extra Requirements:
+- Beautiful animated dashboard
+- Sidebar navigation
+- Sticky navbar
+- Toast notifications
+- Responsive charts
+- Premium UI feel
+
+Generate:
+- app.py
+- requirements.txt
+- Complete templates folder
+- Static CSS/JS files
+- SQLite integration
+- Fully working routes
+- Clean modular code
