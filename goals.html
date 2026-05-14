@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Goals - StudySphere{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-bullseye me-2" style="color: var(--neon-blue);"></i>
+            Goal Management
+        </h2>
+    </div>
+</div>
+
+<!-- Create New Goal Form -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="glass-card">
+            <h4 class="mb-3">
+                <i class="fas fa-plus-circle me-2" style="color: var(--neon-green);"></i>
+                Create New Goal
+            </h4>
+            <form method="POST" action="{{ url_for('goals') }}">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Goal Title</label>
+                        <input type="text" class="form-control" name="title" placeholder="e.g., Study 10 hours this week" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Target Hours</label>
+                        <input type="number" class="form-control" name="target_hours" min="1" placeholder="Hours" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Goal Type</label>
+                        <select class="form-control" name="goal_type" required>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">Due Date</label>
+                        <input type="date" class="form-control" name="due_date">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-neon">
+                    <i class="fas fa-flag me-2"></i>Create Goal
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Goals List -->
+<div class="row">
+    <div class="col-12">
+        <div class="glass-card">
+            <h4 class="mb-3">
+                <i class="fas fa-list-check me-2" style="color: var(--neon-purple);"></i>
+                Your Goals
+            </h4>
+            {% if goals %}
+                {% for goal in goals %}
+                <div class="goal-card {% if goal.completed %}completed{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center mb-2">
+                                {% if goal.completed %}
+                                    <i class="fas fa-check-circle me-2" style="color: var(--neon-green); font-size: 1.5rem;"></i>
+                                {% else %}
+                                    <i class="fas fa-clock me-2" style="color: var(--neon-blue); font-size: 1.5rem;"></i>
+                                {% endif %}
+                                <h5 class="mb-0">{{ goal.title }}</h5>
+                            </div>
+                            <p class="mb-2">
+                                <span class="badge" style="background: var(--secondary-gradient);">{{ goal.goal_type|title }}</span>
+                                <span class="ms-2 text-muted">
+                                    <i class="fas fa-calendar me-1"></i>Due: {{ goal.due_date.strftime('%B %d, %Y') if goal.due_date else 'No due date' }}
+                                </span>
+                            </p>
+                            <div class="mb-2">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Progress</span>
+                                    <span>{{ "%.1f"|format(goal.current_hours) }}h / {{ goal.target_hours }}h</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar" style="width: {{ (goal.current_hours / goal.target_hours * 100) if goal.target_hours > 0 else 0 }}%"></div>
+                                </div>
+                            </div>
+                            <p class="mb-0 text-muted">{{ "%.1f"|format((goal.current_hours / goal.target_hours * 100) if goal.target_hours > 0 else 0) }}% Complete</p>
+                        </div>
+                        <div class="ms-3">
+                            {% if not goal.completed %}
+                                <form method="POST" action="{{ url_for('complete_goal', goal_id=goal.id) }}" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline" style="color: var(--neon-green); border-color: var(--neon-green);" title="Mark as Complete">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </form>
+                            {% endif %}
+                            <form method="POST" action="{{ url_for('delete_goal', goal_id=goal.id) }}" 
+                                  onsubmit="return confirmDelete('Are you sure you want to delete this goal?');"
+                                  class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline" style="color: #f5576c; border-color: #f5576c;" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-bullseye fa-4x mb-3" style="color: rgba(255,255,255,0.3);"></i>
+                    <p class="text-muted">No goals yet. Create your first goal above!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Goal Statistics -->
+<div class="row mt-4">
+    <div class="col-md-4 mb-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ goals|length }}</div>
+            <div class="stat-label">Total Goals</div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ goals|selectattr('completed')|list|length }}</div>
+            <div class="stat-label">Completed Goals</div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="stat-card">
+            <div class="stat-value">{{ goals|rejectattr('completed')|list|length }}</div>
+            <div class="stat-label">Active Goals</div>
+        </div>
+    </div>
+</div>
+
+<!-- Goal Tips -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="glass-card">
+            <h4 class="mb-3">
+                <i class="fas fa-lightbulb me-2" style="color: var(--neon-purple);"></i>
+                Goal Setting Tips
+            </h4>
+            <ul class="mb-0">
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Set SMART goals: Specific, Measurable, Achievable, Relevant, Time-bound</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Break large goals into smaller, manageable targets</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Track your progress regularly to stay motivated</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Celebrate small wins along the way</li>
+                <li class="mb-0"><i class="fas fa-check text-success me-2"></i>Adjust your goals as needed based on your progress</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
